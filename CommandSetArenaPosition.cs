@@ -1,14 +1,16 @@
-﻿using Rocket.API;
-using Rocket.Core.Logging;
+﻿using System;
+using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class CommandSetArenaPosition : IRocketCommand
     {
+        #region Properties
+        
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
 
         public string Name => "setarenaposition";
@@ -19,42 +21,48 @@ namespace ExtraConcentratedJuice.ExtraDuel
 
         public List<string> Aliases => new List<string>();
 
-        public List<string> Permissions => new List<string>() { "extraduel.setposition" };
+        public List<string> Permissions => new List<string> { "extraduel.setposition" };
 
+        #endregion
+        
         public void Execute(IRocketPlayer caller, string[] args)
         {
             if (args.Length != 1)
             {
-                UnturnedChat.Say(caller, Syntax, UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Syntax, Color.red);
                 return;
             }
 
             UnturnedPlayer uPlayer = (UnturnedPlayer)caller;
             if (Int32.TryParse(args[0], out int posNumber))
             {
-                if (posNumber == 1)
+                switch (posNumber)
                 {
-                    UnityEngine.Vector3 position = uPlayer.Position;
-                    ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
-                    player.selectedPos1 = position;
-                    UnturnedChat.Say(Util.getTrans().Translate("extraduel_setposition_success", 1, position.ToString()), UnityEngine.Color.green);
-                }
-                else if (posNumber == 2)
-                {
-                    UnityEngine.Vector3 position = uPlayer.Position;
-                    ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
-                    player.selectedPos2 = position;
-                    UnturnedChat.Say(Util.getTrans().Translate("extraduel_setposition_success", 2, position.ToString()), UnityEngine.Color.green);
-                }
-                else
-                {
-                    UnturnedChat.Say(caller, Syntax, UnityEngine.Color.red);
+                    case 1:
+                    {
+                        Vector3 position = uPlayer.Position;
+                        ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
+                        player.selectedPos1 = position;
+                        UnturnedChat.Say(Util.Translate("extraduel_setposition_success", 1, position.ToString()),
+                            Color.green);
+                        break;
+                    }
+                    case 2:
+                    {
+                        Vector3 position = uPlayer.Position;
+                        ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
+                        player.selectedPos2 = position;
+                        UnturnedChat.Say(Util.Translate("extraduel_setposition_success", 2, position.ToString()),
+                            Color.green);
+                        break;
+                    }
+                    default:
+                        UnturnedChat.Say(caller, Syntax, Color.red);
+                        break;
                 }
             }
             else
-            {
-                UnturnedChat.Say(caller, Syntax, UnityEngine.Color.red);
-            }
+                UnturnedChat.Say(caller, Syntax, Color.red);
         }
     }
 }

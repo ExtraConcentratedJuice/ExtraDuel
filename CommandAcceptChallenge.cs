@@ -1,13 +1,15 @@
-﻿using Rocket.API;
+﻿using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class CommandAcceptChallenge : IRocketCommand
     {
+        #region Properties
+        
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
 
         public string Name => "acceptchallenge";
@@ -18,27 +20,29 @@ namespace ExtraConcentratedJuice.ExtraDuel
 
         public List<string> Aliases => new List<string>();
 
-        public List<string> Permissions => new List<string>() { "extraduel.acceptchallenge" };
+        public List<string> Permissions => new List<string> { "extraduel.acceptchallenge" };
 
+        #endregion
+        
         public void Execute(IRocketPlayer caller, string[] args)
         {
             if (args.Length != 1)
             {
-                UnturnedChat.Say(caller, Syntax, UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Syntax, Color.red);
                 return;
             }
+            
             UnturnedPlayer challenger = UnturnedPlayer.FromName(args[0]);
             if (challenger == null)
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_invalid_player"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_invalid_player"), Color.red);
                 return;
             }
-            UnturnedPlayer p = (UnturnedPlayer)caller;
-            ExtraPlayer ep = p.GetComponent<ExtraPlayer>();
-            if (!ep.challenges.ContainsKey(challenger.Id))
+            
+            ExtraPlayer ep = ((UnturnedPlayer)caller).GetComponent<ExtraPlayer>();
+            if (!ep.challenges.ContainsKey(challenger.CSteamID.m_SteamID))
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_no_challenge"), UnityEngine.Color.red);
-                return;
+                UnturnedChat.Say(caller, Util.Translate("extraduel_no_challenge"), Color.red);
             }
             
         }

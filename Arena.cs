@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using Rocket.Core.Logging;
 using Rocket.Unturned.Player;
+using UnityEngine;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -31,10 +27,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
                 );
         }
 
-        public Boolean IsInArena(Vector3 p)
-        {
-            return rect.Contains(Util.Vector2(p), true);
-        }
+        public Boolean IsInArena(Vector3 p) => rect.Contains(Util.Vector2(p), true);
 
         public void Teleport(UnturnedPlayer p)
         {

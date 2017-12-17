@@ -1,6 +1,10 @@
-﻿using Rocket.API;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using Rocket.API;
 using Rocket.API.Collections;
-using Rocket.Core.Extensions;
 using Rocket.Core.Plugins;
 using Rocket.Unturned;
 using Rocket.Unturned.Chat;
@@ -8,11 +12,9 @@ using Rocket.Unturned.Events;
 using Rocket.Unturned.Player;
 using SDG.Unturned;
 using Steamworks;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using Logger = Rocket.Core.Logging.Logger;
+using Random = System.Random;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -23,6 +25,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
         public List<ArenaGame> games;
         private DateTime lastUpdated;
         public const string arenaPath = "Plugins\\ExtraDuel\\arenas.dat";
+        public static Random Random = new Random();
 
         protected override void Load()
         {
@@ -36,11 +39,11 @@ namespace ExtraConcentratedJuice.ExtraDuel
                 {
                     arenaList = DeserializeArena(arenaPath);
                 }
-                catch (System.Runtime.Serialization.SerializationException)
+                catch (SerializationException)
                 {
                     arenaList = new List<Arena>();
-                    Rocket.Core.Logging.Logger.Log("Deserialization of arenas datafile failed.");
-                    Rocket.Core.Logging.Logger.Log("This is normal for the first run. If it persists, delete arenas.dat in this plugin's directory.");
+                    Logger.Log("Deserialization of arenas datafile failed.");
+                    Logger.Log("This is normal for the first run. If it persists, delete arenas.dat in this plugin's directory.");
 
                 }
             }
@@ -100,6 +103,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
         private void PlayerUpdatedPosition(UnturnedPlayer p, Vector3 pos)
         {
             ExtraPlayer ep = p.GetComponent<ExtraPlayer>();
+            
             if (!ArenaCheck(p, pos, ep.lastPosition))
                 ep.lastPosition = pos;
         }
@@ -107,28 +111,24 @@ namespace ExtraConcentratedJuice.ExtraDuel
         private void OnPlayerDamage(Player player, ref EDeathCause cause, ref ELimb limb, ref CSteamID killer, ref Vector3 direction, ref float damage, ref float times, ref bool canDamage)
         {
             UnturnedPlayer uPlayer = UnturnedPlayer.FromPlayer(player);
-            ExtraPlayer ep = uPlayer.GetComponent<ExtraPlayer>();
-            if (uPlayer.HasPermission("extraduel.invulnerable"))
-            {
-                damage = 0;
-                canDamage = false;
-            }
+            
+            if (!uPlayer.HasPermission("extraduel.invulnerable")) return;
+            
+            damage = 0;
+            canDamage = false;
         }
 
         public static bool ArenaCheck(UnturnedPlayer p, Vector3 pos, Vector3 prevPos)
         {
             foreach (Arena a in instance.arenaList)
-            {
                 if (a.IsInArena(pos))
-                {
                     if (p.HasPermission("extraduel.enterarena"))
                     {
                         p.Teleport(prevPos, p.Rotation);
                         UnturnedChat.Say(p, "Get out of this arena!");
                         return true;
                     }
-                }
-            }
+            
             return false;
         }
 
@@ -182,8 +182,8 @@ namespace ExtraConcentratedJuice.ExtraDuel
             }
         }
 
-        public override TranslationList DefaultTranslations => new TranslationList()
-                {
+        public override TranslationList DefaultTranslations => new TranslationList
+        {
                     {"extraduel_invalid_player", "The specified player was not found."},
                     {"extraduel_self_invoke", "You cannot use this command on yourself."},
                     {"extraduel_teleport_out_of_arena", "You were in an arena when you logged in, so we teleported you out into a random spawn!"},

@@ -1,8 +1,7 @@
-﻿using Rocket.API;
+﻿using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
-using System;
-using System.Collections.Generic;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -18,7 +17,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
 
         public List<string> Aliases => new List<string>();
 
-        public List<string> Permissions => new List<string>() { "extraduel.coords" };
+        public List<string> Permissions => new List<string> { "extraduel.coords" };
 
         public void Execute(IRocketPlayer caller, string[] args)
         {

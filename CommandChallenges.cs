@@ -1,14 +1,16 @@
-﻿using Rocket.API;
+﻿using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using Steamworks;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class CommandChallenges : IRocketCommand
     {
+        #region Properties
+        
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
 
         public string Name => "challenges";
@@ -19,21 +21,24 @@ namespace ExtraConcentratedJuice.ExtraDuel
 
         public List<string> Aliases => new List<string>();
 
-        public List<string> Permissions => new List<string>() { "extraduel.challenges" };
+        public List<string> Permissions => new List<string> { "extraduel.challenges" };
 
+        #endregion
+        
         public void Execute(IRocketPlayer caller, string[] args)
         {
-            UnturnedPlayer p = (UnturnedPlayer)caller;
-            ExtraPlayer ep = p.GetComponent<ExtraPlayer>();
+            ExtraPlayer ep = ((UnturnedPlayer)caller).GetComponent<ExtraPlayer>();
+            
             if (ep.challenges.Count <= 0)
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_challenges_none"), UnityEngine.Color.yellow);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_challenges_none"), Color.yellow);
                 return;
             }
-            foreach (string c in ep.challenges.Keys)
+            
+            foreach (ulong c in ep.challenges.Keys)
             {
-                UnturnedPlayer player = UnturnedPlayer.FromCSteamID(new CSteamID(ulong.Parse(c)));
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_challenges_message", player), UnityEngine.Color.green);
+                UnturnedPlayer player = UnturnedPlayer.FromCSteamID(new CSteamID(c));
+                UnturnedChat.Say(caller, Util.Translate("extraduel_challenges_message", player), Color.green);
             }
         }
     }

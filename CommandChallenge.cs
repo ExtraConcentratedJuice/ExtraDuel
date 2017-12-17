@@ -1,13 +1,16 @@
-﻿using Rocket.API;
+﻿using System;
+using System.Collections.Generic;
+using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
-using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class CommandChallenge : IRocketCommand
     {
+        #region Properties
+        
         public AllowedCaller AllowedCaller => AllowedCaller.Player;
 
         public string Name => "challenge";
@@ -18,50 +21,52 @@ namespace ExtraConcentratedJuice.ExtraDuel
 
         public List<string> Aliases => new List<string>();
 
-        public List<string> Permissions => new List<string>() { "extraduel.challenge" };
+        public List<string> Permissions => new List<string> { "extraduel.challenge" };
 
+        #endregion
+        
         public void Execute(IRocketPlayer caller, string[] args)
         {
             if (args.Length != 2)
             {
-                UnturnedChat.Say(caller, Syntax, UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Syntax, Color.red);
                 return;
             }
+            
             UnturnedPlayer challenged = UnturnedPlayer.FromName(args[0]);
-
             if (challenged == null)
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_invalid_player"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_invalid_player"), Color.red);
                 return;
             }
+            
             UnturnedPlayer p = (UnturnedPlayer)caller;
-
-            if (challenged.Equals(p))
+            if (challenged.CSteamID.m_SteamID == p.CSteamID.m_SteamID)
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_self_invoke"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_self_invoke"), Color.red);
                 return;
             }
 
             ExtraPlayer ep = challenged.GetComponent<ExtraPlayer>();
             if (!ep.acceptingChallengers)
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_challenges_off"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_challenges_off"), Color.red);
                 return;
             }
             if (!ExtraDuel.ArenaExists(args[1]))
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_removearena_fail_not_found"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_removearena_fail_not_found"), Color.red);
                 return;
             }
 
-            if (ep.challenges.ContainsKey(p.Id))
+            if (ep.challenges.ContainsKey(p.CSteamID.m_SteamID))
             {
-                UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_already_challenged"), UnityEngine.Color.red);
+                UnturnedChat.Say(caller, Util.Translate("extraduel_already_challenged"), Color.red);
                 return;
             }
 
-            p.GetComponent<ExtraPlayer>().CreateChallenge(challenged, DateTime.Now.AddSeconds(20), ExtraDuel.ArenaFromName(args[1]));
-            UnturnedChat.Say(caller, Util.getTrans().Translate("extraduel_challenge_success", challenged.DisplayName), UnityEngine.Color.green);
+            ep.CreateChallenge(challenged, DateTime.Now.AddSeconds(20), ExtraDuel.ArenaFromName(args[1]));
+            UnturnedChat.Say(caller, Util.Translate("extraduel_challenge_success", challenged.DisplayName), Color.green);
         }
     }
 }
