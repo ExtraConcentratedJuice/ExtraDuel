@@ -3,6 +3,7 @@ using Rocket.API;
 using Rocket.Unturned.Chat;
 using Rocket.Unturned.Player;
 using UnityEngine;
+using System.Linq;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -40,16 +41,14 @@ namespace ExtraConcentratedJuice.ExtraDuel
             }
             
             Arena newArena = new Arena(player.selectedPos1, player.selectedPos2, args[0]);
-            foreach (Arena a in ExtraDuel.instance.arenaList)
+            
+            if (ExtraDuel.instance.arenaList.Any(x => x.rect.Overlaps(newArena.rect)))
             {
-                if (a.rect.Overlaps(newArena.rect))
-                {
-                    UnturnedChat.Say(caller, Util.Translate("extraduel_definearena_fail_overlap"), Color.red);
-                    return;
-                }
-                
-                if (a.name != newArena.name) continue;
-                
+                UnturnedChat.Say(caller, Util.Translate("extraduel_definearena_fail_overlap"), Color.red);
+                return;
+            }
+            if (ExtraDuel.instance.arenaList.Any(x => x.name == newArena.name))
+            {
                 UnturnedChat.Say(caller, Util.Translate("extraduel_definearena_fail_same_name"), Color.red);
                 return;
             }

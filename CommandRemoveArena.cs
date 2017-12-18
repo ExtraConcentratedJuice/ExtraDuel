@@ -2,6 +2,7 @@
 using Rocket.API;
 using Rocket.Unturned.Chat;
 using UnityEngine;
+using System.Linq;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -30,12 +31,11 @@ namespace ExtraConcentratedJuice.ExtraDuel
                 UnturnedChat.Say(caller, Syntax, Color.red);
                 return;
             }
-            
-            for (int i = 0; i < ExtraDuel.instance.arenaList.Count; i++)
+
+            int index = ExtraDuel.instance.arenaList.FindIndex(x => x.name == args[0]);
+            if (index > -1)
             {
-                if (ExtraDuel.instance.arenaList[i].name != args[0]) continue;
-                
-                ExtraDuel.instance.arenaList.RemoveAt(i);
+                ExtraDuel.instance.arenaList.RemoveAt(index);
                 UnturnedChat.Say(caller, Util.Translate("extraduel_removearena_success"), Color.green);
                 ExtraDuel.instance.SerializeArena(ExtraDuel.arenaPath);
                 return;

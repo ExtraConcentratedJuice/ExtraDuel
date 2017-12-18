@@ -43,7 +43,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
                         Vector3 position = uPlayer.Position;
                         ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
                         player.selectedPos1 = position;
-                        UnturnedChat.Say(Util.Translate("extraduel_setposition_success", 1, position.ToString()),
+                        UnturnedChat.Say(caller, Util.Translate("extraduel_setposition_success", 1, position.ToString()),
                             Color.green);
                         break;
                     }
@@ -52,7 +52,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
                         Vector3 position = uPlayer.Position;
                         ExtraPlayer player = uPlayer.GetComponent<ExtraPlayer>();
                         player.selectedPos2 = position;
-                        UnturnedChat.Say(Util.Translate("extraduel_setposition_success", 2, position.ToString()),
+                        UnturnedChat.Say(caller, Util.Translate("extraduel_setposition_success", 2, position.ToString()),
                             Color.green);
                         break;
                     }

@@ -10,7 +10,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
         public Vector3 previousPos1;
         public Vector3 previousPos2;
         public Arena arena;
-        public bool onGoing;
+        public bool hasEnded;
 
         public ArenaGame(UnturnedPlayer p1, UnturnedPlayer p2, Arena a)
         {
@@ -20,7 +20,8 @@ namespace ExtraConcentratedJuice.ExtraDuel
             previousPos2 = p2.Position;
 
             arena = a;
-            onGoing = true;
+            hasEnded = false;
+            a.BeginGame(p1, p2, this);
         }
     }
 }

@@ -6,8 +6,8 @@ namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class Arena
     {
-        public ArenaGame game;
         public string name;
+        public ArenaGame game;
         public Vector3 pos1;
         public Vector3 pos2;
         public Rect rect;
@@ -33,6 +33,13 @@ namespace ExtraConcentratedJuice.ExtraDuel
         {
             Vector3 arenaCenter = rect.center;
             p.Teleport(new Vector3(arenaCenter.x, pos2.y + 3, arenaCenter.z), p.Rotation);
+        }
+
+        public void BeginGame(UnturnedPlayer p1, UnturnedPlayer p2, ArenaGame g)
+        {
+            game = g;
+            Teleport(p1);
+            Teleport(p2);
         }
     } 
 }

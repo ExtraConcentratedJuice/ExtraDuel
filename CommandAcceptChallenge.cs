@@ -40,11 +40,12 @@ namespace ExtraConcentratedJuice.ExtraDuel
             }
             
             ExtraPlayer ep = ((UnturnedPlayer)caller).GetComponent<ExtraPlayer>();
+
             if (!ep.challenges.ContainsKey(challenger.CSteamID.m_SteamID))
             {
                 UnturnedChat.Say(caller, Util.Translate("extraduel_no_challenge"), Color.red);
+                return;
             }
-            
         }
     }
 }

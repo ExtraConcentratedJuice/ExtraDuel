@@ -15,6 +15,7 @@ using Steamworks;
 using UnityEngine;
 using Logger = Rocket.Core.Logging.Logger;
 using Random = System.Random;
+using System.Linq;
 
 namespace ExtraConcentratedJuice.ExtraDuel
 {
@@ -44,7 +45,6 @@ namespace ExtraConcentratedJuice.ExtraDuel
                     arenaList = new List<Arena>();
                     Logger.Log("Deserialization of arenas datafile failed.");
                     Logger.Log("This is normal for the first run. If it persists, delete arenas.dat in this plugin's directory.");
-
                 }
             }
             else
@@ -60,13 +60,9 @@ namespace ExtraConcentratedJuice.ExtraDuel
         protected override void Unload()
         {
         }
-        
+
         private void OnDisconnected(UnturnedPlayer player)
         {
-            foreach (SteamPlayer p in Provider.clients)
-            {
-                UnturnedPlayer.FromSteamPlayer(p).GetComponent<ExtraPlayer>().OnDisconnect(player);
-            }
         }
 
         public void SerializeArena(string path)
@@ -91,7 +87,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
                 BinaryFormatter binaryFormatter = new BinaryFormatter();
                 sArenaList = (List<SerializableArena>)binaryFormatter.Deserialize(stream);
             }
-            foreach(SerializableArena a in sArenaList)
+            foreach (SerializableArena a in sArenaList)
             {
                 Vector3 p1 = new Vector3(a.pos1x, a.pos1y, a.pos1z);
                 Vector3 p2 = new Vector3(a.pos2x, a.pos2y, a.pos2z);
@@ -103,82 +99,53 @@ namespace ExtraConcentratedJuice.ExtraDuel
         private void PlayerUpdatedPosition(UnturnedPlayer p, Vector3 pos)
         {
             ExtraPlayer ep = p.GetComponent<ExtraPlayer>();
-            
+
             if (!ArenaCheck(p, pos, ep.lastPosition))
                 ep.lastPosition = pos;
         }
 
         private void OnPlayerDamage(Player player, ref EDeathCause cause, ref ELimb limb, ref CSteamID killer, ref Vector3 direction, ref float damage, ref float times, ref bool canDamage)
         {
-            UnturnedPlayer uPlayer = UnturnedPlayer.FromPlayer(player);
-            
-            if (!uPlayer.HasPermission("extraduel.invulnerable")) return;
-            
-            damage = 0;
-            canDamage = false;
+            ExtraPlayer ep = UnturnedPlayer.FromPlayer(player).GetComponent<ExtraPlayer>();
+            if (ep.game != null)
+            {
+                UnturnedPlayer enemy = UnturnedPlayer.FromCSteamID(killer);
+                if (ep.game.participant1 != enemy && ep.game.participant2 != enemy)
+                    if (cause != EDeathCause.MELEE || cause != EDeathCause.PUNCH)
+                        canDamage = false;
+            }
         }
 
         public static bool ArenaCheck(UnturnedPlayer p, Vector3 pos, Vector3 prevPos)
         {
             foreach (Arena a in instance.arenaList)
                 if (a.IsInArena(pos))
-                    if (p.HasPermission("extraduel.enterarena"))
+                {
+                    if (p.GetComponent<ExtraPlayer>().game != null)
                     {
-                        p.Teleport(prevPos, p.Rotation);
-                        UnturnedChat.Say(p, "Get out of this arena!");
-                        return true;
+                        if (p.GetComponent<ExtraPlayer>().game.arena == a)
+                            return false;
                     }
-            
-            return false;
-        }
-
-        public static bool ArenaExists(string name)
-        {
-            for (int i = 0; i < instance.arenaList.Count; i++)
-            {
-                if (instance.arenaList[i].name == name)
-                {
+                    UnturnedChat.Say(p, "get outta here");
+                    p.Teleport(prevPos, p.Rotation);
                     return true;
                 }
-            }
             return false;
         }
 
-        public static bool ArenaExists(Arena a)
-        {
-            for (int i = 0; i < instance.arenaList.Count; i++)
-            {
-                if (instance.arenaList[i].Equals(a))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+        public static bool ArenaExists(string name) => instance.arenaList.Any(x => x.name == name);
 
-        public static Arena ArenaFromName(string name)
-        {
-            for (int i = 0; i < instance.arenaList.Count; i++)
-            {
-                if (instance.arenaList[i].name == name)
-                {
-                    return instance.arenaList[i];
-                }
-            }
-            return null;
-        }
+        public static bool ArenaExists(Arena a) => instance.arenaList.Any(x => x == a);
+
+        public static Arena ArenaFromName(string name) => instance.arenaList.FirstOrDefault(x => x.name == name);
 
         private void FixedUpdate()
         {
             if ((DateTime.Now - lastUpdated).TotalSeconds > Util.getConfig().updateTime)
             {
-                for(int i = 0; i < games.Count; i++)
-                {
-                    if (!games[i].onGoing)
-                    {
+                for (int i = 0; i < games.Count; i++)
+                    if (games[i].hasEnded)
                         games.RemoveAt(i);
-                    }
-                }
             }
         }
 
@@ -190,7 +157,7 @@ namespace ExtraConcentratedJuice.ExtraDuel
                     {"extraduel_no_position_set", "You have no positions set. Set a couple with /setarenaposition <1 or 2>"},
                     {"extraduel_setposition_success", "You have successfully set position {0} to {1}!"},
                     {"extraduel_definearena_success", "You have successfully defined an arena!"},
-                    {"extraduel_definearena_fail_overlap", "This arena is overlapping with another arena."},
+                    {"extraduel_definearena_fail_overlap", "The defined area is overlapping with another arena."},
                     {"extraduel_definearena_fail_same_name", "There is already an arena with that name!"},
                     {"extraduel_removearena_success", "You have successfully removed that arena!"},
                     {"extraduel_removearena_fail_not_found", "No arena was found with that name."},

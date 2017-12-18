@@ -10,7 +10,6 @@ namespace ExtraConcentratedJuice.ExtraDuel
 {
     public class ExtraPlayer : UnturnedPlayerComponent
     {
-        public bool isInArena;
         public ArenaGame game;
         public Vector3 selectedPos1;
         public Vector3 selectedPos2;
@@ -42,7 +41,6 @@ namespace ExtraConcentratedJuice.ExtraDuel
             acceptingChallengers = true;
             lastUpdated = DateTime.Now;
             challenges = new Dictionary<ulong, Challenge>();
-            isInArena = false;
             
             if (!Player.HasPermission("extraduel.can_spawn_in_arena"))
             {
@@ -58,12 +56,6 @@ namespace ExtraConcentratedJuice.ExtraDuel
                 }
             }
             lastPosition = Player.Position;
-        }
-
-        public void OnDisconnect(UnturnedPlayer player)
-        {
-            if (challenges.ContainsKey(player.CSteamID.m_SteamID))
-                TryTerminateChallenge(player.CSteamID.m_SteamID, TerminationReasons.LEAVE);
         }
 
         private void FixedUpdate()
